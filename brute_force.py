@@ -18,6 +18,24 @@ def brute_force_closest_pair(points: list[tuple[float, float]]) -> tuple[float, 
               tuple of two points ((x1, y1), (x2, y2)).
     """
 
+    """
+    Brute Force Approach
+    1) Calculate distrance between all pairs.
+    2) Store minimum distance and each pair that has that distance.
+
+    O(n^2) complexity
+
+    Psuedo code design
+
+    1) Set min_distance to be inf.
+    2) Initialize an empty list for pairs we're interested in
+    3) For each pair, compare distance. If distance is less than min_distance,
+    store distance and add that pair to the list.
+    4) If distance is the same for the next pair, add to the list.
+    5) Return the minimum distance and pair list.
+    
+    """
+
     min_dist = float('inf')
     closest_pairs = []
     
