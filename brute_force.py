@@ -32,14 +32,31 @@ def brute_force_closest_pair(points: list[tuple[float, float]]) -> tuple[float, 
     3) For each pair, compare distance. If distance is less than min_distance,
     store distance and add that pair to the list.
     4) If distance is the same for the next pair, add to the list.
-    5) Return the minimum distance and pair list.
+    5) Sort list of closest pairs.
+    6) Return the minimum distance and pair list.
     
     """
-
     min_dist = float('inf')
     closest_pairs = []
-    
-    #TODO 
+    dist = 0.0
+
+    for i in range(len(points)):
+        for j in range(i+1, len(points)):
+            p1 = points[i]
+            p2 = points[j]
+
+            dist = distance(points[i], points[j])
+
+            if dist < min_dist:
+                min_dist = dist
+                closest_pairs = [p1, p2]
+            elif dist == min_dist:
+                closest_pairs.append([p1, p2])
+
+    for pair in closest_pairs:
+        pair = list(pair)
+        pair.sort()
+    closest_pairs.sort
 
     return min_dist, closest_pairs
 
