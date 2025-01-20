@@ -61,24 +61,32 @@ def brute_force_closest_pair(points: list[tuple[float, float]]) -> tuple[float, 
 
 if __name__ == "__main__":
     try:
-        points = read_input_from_cli()
-        
-        generate_random_input_file(n = 1000, output_file = "input1000.txt", seed = 42)
-        print("Generated 1000 random points in brute_f")
+        if len(sys.argv) > 1:
+            # Check user arguments
+            input_file = sys.argv[1]
+            print(f"Reading points from {input_file}")
+            points = read_file_to_list(input_file)
+        else:
+            # Otherwise, check hard coded statement
+            generate_random_input_file(n=1000, output_file="input1000.txt", seed=42)
+            print("No input file provided. Instead, generate 1000 random points in input1000.txt")
+            points = read_file_to_list("input1000.txt")
 
-        points = read_file_to_list("input1000.txt")
-        print("Read 1000 points from input1000.txt")
-
-        start_time= time.time()
+        # Measure execution time
+        start_time = time.time()
         min_dist, closest_pairs = brute_force_closest_pair(points)
         end_time = time.time()
 
-        print(f"Brute force took {end_time - start_time: 0.6f} seconds")
+        # Print the results
+        print(f"Brute force took {end_time - start_time:.6f} seconds")
         print(f"Minimum Distance: {min_dist}")
         print("Closest Pairs:")
         for pair in closest_pairs:
             print(pair)
-        write_output_to_file(distance=min_dist, points=closest_pairs, output_file= 'bruteforce_output.txt')
+
+        # Write results to file
+        write_output_to_file(distance=min_dist, points=closest_pairs, output_file='bruteforce_output.txt')
+        print("Results written to bruteforce_output.txt")
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
