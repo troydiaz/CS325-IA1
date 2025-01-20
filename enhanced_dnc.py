@@ -21,7 +21,7 @@ def enhanced_divide_and_conquer_closest_pair(points: list[tuple[float, float]]) 
     
     # TODO 
 
-      return distance, pairs
+    return distance, pairs
 
 
 if __name__ == "__main__":

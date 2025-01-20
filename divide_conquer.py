@@ -17,7 +17,12 @@ def divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[
             - A list of tuples representing the closest point pairs, where each pair is a 
               tuple of two points ((x1, y1), (x2, y2)).
     """
+
+    """
+    """
     # TO COMPLETE 
+
+
 
     return distance, pairs
 

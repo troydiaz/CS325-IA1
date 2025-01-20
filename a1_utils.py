@@ -1,6 +1,7 @@
 import sys
 import math
 import random
+import time
 from typing import List, Tuple
 
 def distance(p1, p2):
