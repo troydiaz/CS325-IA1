@@ -68,9 +68,9 @@ if __name__ == "__main__":
             points = read_file_to_list(input_file)
         else:
             # Otherwise, check hard coded statement
-            generate_random_input_file(n=1000, output_file="input1000.txt", seed=42)
-            print("No input file provided. Instead, generate 1000 random points in input1000.txt")
-            points = read_file_to_list("input1000.txt")
+            generate_random_input_file(n=100000, output_file="input105.txt", seed=42)
+            print("No input file provided. Instead, generate 10^5 random points in input105.txt")
+            points = read_file_to_list("input105.txt")
 
         # Measure execution time
         start_time = time.time()
