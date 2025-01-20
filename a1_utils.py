@@ -2,6 +2,7 @@ import sys
 import math
 import random
 import time
+import io
 from typing import List, Tuple
 
 def distance(p1, p2):
@@ -31,6 +32,36 @@ def generate_random_input_file(
     with open(output_file, 'w') as f:
         for point in points:
             f.write(f"{point[0]} {point[1]}\n")
+
+def generate_random_input(
+    n: int,
+    seed: int = 42,
+    ):
+    """
+    This function returns a random input with n unique points.
+
+    Args:
+    n: int - The number of points to generate
+    seed: int - The random seed for reproducibility
+    Returns:
+    None
+    """
+    random.seed(seed)
+    x_values = random.sample(range(1, n*10), n)  # Ensures distinct x values
+    y_values = random.sample(range(1, n*10), n)  # Ensures distinct y values
+    points = list(zip(x_values, y_values))
+    output = ""
+    for index,point in enumerate(points):
+        output += (f"{point[0]} {point[1]}")
+        if index != len(points) - 1:
+           output += ("\n")
+        # output += line
+
+    # output = io.StringIO
+    # with open(output, 'w') as f:
+    #     for point in points:
+    #         f.write(f"{point[0]} {point[1]}\n")
+    return output
     
 
 def read_input_from_cli():
@@ -48,7 +79,10 @@ def read_input_from_cli():
         sys.exit(1)
 
     input_file = sys.argv[1]
-    data = read_file_to_list(input_file)
+    if input_file == "random":
+        data = generate_random_input(sys.argv[2], sys.argv[3])
+    else:
+        data = read_file_to_list(input_file)
     return data
 
 def read_file_to_list(input_file: str) -> List[tuple]:
