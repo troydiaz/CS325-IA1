@@ -42,7 +42,8 @@ enhanced_dnc_recursive (xSortedPoints, ySortedPoints, lowIndex, highIndex)
     splitIndex = floor((highIndex - lowIndex) / 2)
     x_m = xSortedPoints[splitIndex][0]
     leftHalf = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, lowIndex, splitIndex)
-    rightHalf = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, splitIndex + 1, highIndex)
+    rightHalf = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, 
+                                        splitIndex + 1, highIndex)
     d = min(leftHalf.closestPair, rightHalf.closestPair)
     for point in ySortedPoints:
         if x_m - d <= point[0] && point[0] <= x_m + d:
