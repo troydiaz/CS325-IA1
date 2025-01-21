@@ -30,9 +30,9 @@ def enhanced_divide_and_conquer_closest_pair(points: list[tuple[float, float]]) 
     return distance, pairs
 
 def enhanced_dnc_recursive(xSortedPoints, ySortedPoints, low, high):
-    if high - low < 2:
+    if high - low <= 1:
         return computeDistance(xSortedPoints[low], xSortedPoints[high]), [[xSortedPoints[low], xSortedPoints[high]]]
-    elif high - low < 3:
+    elif high - low == 2:
         mid = low + 1
         distancelowmid = computeDistance(xSortedPoints[low], xSortedPoints[mid])
         leftSortedOf3 = [[xSortedPoints[low], xSortedPoints[mid]]]
@@ -56,8 +56,7 @@ def enhanced_dnc_recursive(xSortedPoints, ySortedPoints, low, high):
     splitIndex = math.floor((high + low) / 2)
     x_m = xSortedPoints[splitIndex][0]
     leftMinDistance, leftSortedPoints = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, low, splitIndex)
-    rightMinDistance, rightSortedPoints = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, 
-                                        splitIndex + 1, high)
+    rightMinDistance, rightSortedPoints = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, splitIndex + 1, high)
     if leftMinDistance < rightMinDistance:
         d = leftMinDistance
         closestPoints = leftSortedPoints
@@ -71,6 +70,10 @@ def enhanced_dnc_recursive(xSortedPoints, ySortedPoints, low, high):
             closestPoints.append(point)
     M = []
     for point in ySortedPoints:
+        if point[0] < xSortedPoints[low][0] or point[0] > xSortedPoints[high][0]:
+            break
+        thePointX = point[0]
+        delta = abs(point[0] - x_m)
         if abs(point[0] - x_m) < d:
             M.append(point)
     d_m = d
@@ -144,7 +147,7 @@ def computeDistance(pointA, pointB):
 if __name__ == "__main__":
     try:
         # points = read_input_from_cli()
-        points = read_file_to_list("input103.txt")
+        points = read_file_to_list("input102.txt")
 
         # Measure execution time
         start_time = time.time()
