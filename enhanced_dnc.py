@@ -116,7 +116,7 @@ if __name__ == "__main__":
         print("Closest Pairs:")
         for pair in closest_pairs:
             print(pair)
-        write_output_to_file(distance=min_dist, points=closest_pairs, output_file= 'enhance_ddnc_output.txt')
+        write_output_to_file(distance=min_dist, points=closest_pairs, output_file= 'enhanced_dnc_output.txt')
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
