@@ -106,7 +106,6 @@ def computeDistance(A, B):
 if __name__ == "__main__":
     try:
         points = read_input_from_cli()
-        # points = read_file_to_list("input3.txt")
 
         # Measure execution time
         start_time = time.time()
