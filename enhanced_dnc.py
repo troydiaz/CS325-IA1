@@ -3,7 +3,7 @@ import copy
 from itertools import combinations
 import math
 import time
-from a1_utils import read_input_from_cli, distance, write_output_to_file,read_file_to_list, generate_random_input, sort_pairs
+from a1_utils import read_input_from_cli, distance, write_output_to_file,read_file_to_list, generate_random_input_file, sort_pairs
 
 
 def enhanced_divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[float, list[tuple[tuple[float, float], tuple[float, float]]]]:
@@ -70,6 +70,8 @@ def enhanced_dnc_recursive(xSortedPoints, ySortedPoints, low, high):
     for pointSet in closestPoints:
         if pointSet[0][0] == x_m and pointSet[1][0] == x_m:
             closestPoints.remove(pointSet)
+        elif abs(pointSet[0][0] - x_m) <= d and abs(pointSet[1][0] - x_m) <= d:
+            closestPoints.remove(pointSet)
     M = []
     for point in ySortedPoints:
         if point[0] < xSortedPoints[low][0] or point[0] > xSortedPoints[high][0]:
@@ -104,7 +106,7 @@ def computeDistance(A, B):
 if __name__ == "__main__":
     try:
         points = read_input_from_cli()
-        # points = read_file_to_list("input1.txt")
+        # points = read_file_to_list("input3.txt")
 
         # Measure execution time
         start_time = time.time()
