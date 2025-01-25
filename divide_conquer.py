@@ -24,40 +24,7 @@ def divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[
     """
     # TO COMPLETE 
 
-    """
-    Pseudocode Design
-    1. DivideandConquerClosestPair(points)
-        1.1 Sort points by x-coordinate
-        1.2 Return the result of calling RecursiveClosestPair(points)
-    2. RecursiveClosestPair(points)
-        2.1 Divide points into two halves: left and right
-        2.2 Compute the midpoint x-coordinate for dividing the points
-        2.3 Recursively call RecursiveClosestPair(left) to get d1 and pairs1
-        2.4 Recursively call RecursiveClosestPair(right) to get d2 and pairs2
-        2.5 Set d to the smaller of d1 and d2
-        2.6 Collect all points within distance d of the midpoint into a list called strip
-        2.7 Call MergeStep(strip, d) to get d_strip and pairs_strip
-        2.8 If d_strip < d:
-            Return d_strip and pairs_strip
-        2.9 If d_strip == d:
-            Return d and the combined pairs from pairs1, pairs2, and pairs_strip
-        2.10 Else:
-            Return d and the combined pairs from pairs1 and pairs2
-    3. MergeStrip(strip, d)
-        3.1 Sort strip by y-coordinate
-        3.2 Set min_distance to d
-        3.3 Initialize an empty list closest_pairs to store the closest pairs
-        3.4 For each point p in strip:
-            For each point q after p in strip:
-                If (q.y - p.y) >= min_distance, break
-                Compute the distance d_ij between p and q
-                If d_ij < min_distance:
-                    Update min_distance to d_ij
-                    Replace closest_pairs with [(p,q)]
-                If d_ij == min_distance:
-                    Add (p,q) to closest_pairs
-        3.5 Return min_distance and closest_pairs
-    """
+
     def recursive_closest_pair(sorted_points: list[tuple[float, float]]) -> tuple[float, list[tuple[tuple[float, float], tuple[float, float]]]]:
         
         # Base case: If there's only one point, no pair exists
