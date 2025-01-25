@@ -2,7 +2,8 @@ import sys
 from itertools import combinations
 import math
 import time
-from a1_utils import read_input_from_cli, distance, write_output_to_file
+import copy
+from a1_utils import read_input_from_cli, distance, write_output_to_file, read_file_to_list, sort_pairs
 
 def divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[float, list[tuple[tuple[float, float], tuple[float, float]]]]:
     """
@@ -74,11 +75,29 @@ def divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[
         d2, pairs2 = recursive_closest_pair(right_points)
         
         # Combine results from both halves
-        d = min(d1, d2)
-        pairs = pairs1 + pairs2
+        if d1 < d2:
+            d = d1
+            pairs = pairs1
+        elif d1 > d2:
+            d = d2
+            pairs = pairs2
+        elif math.isclose(d1, d2):
+            d = d1
+            pairs = pairs1
+            for point in pairs2:
+                pairs.append(point)
         
         # Collect points within distance d of the midpoint into strip
         strip = [p for p in sorted_points if abs(p[0] - midpoint_x) < d]
+
+        # Remove closest pairs within M-strip to avoid double-count
+        pairsCopy = copy.deepcopy(pairs)
+        for pair in pairs:
+            if math.isclose(pair[0][0], midpoint_x) and math.isclose(pair[1][0],midpoint_x):
+                pairsCopy.remove(pair)
+            elif (abs(pair[0][0] - midpoint_x) < d and abs(pair[1][0] - midpoint_x) < d):
+                pairsCopy.remove(pair)   
+        pairs = pairsCopy  
         
         # Sort the strips by y-coordinates from scratch (Naive Approach)
         strip.sort(key=lambda p: p[1])
@@ -87,10 +106,10 @@ def divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[
         d_strip, pairs_strip = merge_strip(strip, d)
         
         # Return the smallest distance and corresponding pairs
-        if d_strip < d:
-            return d_strip, pairs_strip
-        elif d_strip == d:
+        if math.isclose(d_strip, d):
             return d, pairs + pairs_strip
+        elif d_strip < d:
+            return d_strip, pairs_strip
         else:
             return d, pairs
     
@@ -103,23 +122,23 @@ def divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[
         # Compare each pair of points in the strip
         for i in range(len(strip)):
             for j in range(i + 1, len(strip)):
-                if (strip[j][1] - strip[i][1]) >= min_dist:
+                if abs(strip[j][1] - strip[i][1]) > min_dist:
                     break
                 d_ij = distance(strip[i], strip[j])
-                if d_ij < min_dist:
+                if math.isclose(d_ij, min_dist):
+                    closest_pairs.append((strip[i], strip[j]))
+                elif d_ij < min_dist:
                     min_dist = d_ij
                     closest_pairs = [(strip[i], strip[j])]
-                elif d_ij == min_dist:
-                    closest_pairs.append((strip[i], strip[j]))
-
+                    
         return min_dist, closest_pairs
     
     # Sort points by x-coordinate as the first step
     sorted_points = sorted(points, key=lambda p: p[0])
 
     # Recursive calls will re-sort parts of the data as needed (Naive Approach)
-    return recursive_closest_pair(sorted_points)
-
+    distanceOutput, pairs = recursive_closest_pair(sorted_points)
+    return distanceOutput, sort_pairs(pairs)
     # return distance, pairs
 
 
@@ -127,6 +146,7 @@ def divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[
 if __name__ == "__main__":
     try:
         points = read_input_from_cli()
+        # points = read_file_to_list("input1.txt")
         start_time = time.time()
         min_dist, closest_pairs = divide_and_conquer_closest_pair(points)
         end_time = time.time()
