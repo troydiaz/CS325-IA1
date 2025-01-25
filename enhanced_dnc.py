@@ -4,6 +4,7 @@ from itertools import combinations
 import math
 import time
 from a1_utils import read_input_from_cli, distance, write_output_to_file,read_file_to_list, generate_random_input_file, sort_pairs
+from brute_force import brute_force_closest_pair
 
 
 def enhanced_divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[float, list[tuple[tuple[float, float], tuple[float, float]]]]:
@@ -23,78 +24,63 @@ def enhanced_divide_and_conquer_closest_pair(points: list[tuple[float, float]]) 
     
     xSortedPoints =  sorted(points, key=lambda pair: pair[0])
     ySortedPoints = sorted(points, key=lambda pair: pair[1])
-    distance, pairs = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, 0, len(points) - 1)
+    distance, pairs = enhanced_dnc_recursive(xSortedPoints, ySortedPoints)
     return distance, sort_pairs(pairs)
 
-def enhanced_dnc_recursive(xSortedPoints, ySortedPoints, low, high):
-    if high - low <= 1:
-        return computeDistance(xSortedPoints[low], xSortedPoints[high]), [[xSortedPoints[low], xSortedPoints[high]]]
-    elif high - low == 2:
-        mid = low + 1
-        distanceLowMid = computeDistance(xSortedPoints[low], xSortedPoints[mid])
-        closestOf3 = [[xSortedPoints[low], xSortedPoints[mid]]]
-        minDistanceOf3 = distanceLowMid
+def enhanced_dnc_recursive(xSortedPoints, ySortedPoints):
+    if len(xSortedPoints) <= 1:
+        return float('inf'), []
 
-        distanceLowHigh = computeDistance(xSortedPoints[low], xSortedPoints[high])
-        if math.isclose(distanceLowHigh, minDistanceOf3):
-            closestOf3.append([xSortedPoints[low], xSortedPoints[high]])
-        elif distanceLowHigh < minDistanceOf3:
-            closestOf3 = [[xSortedPoints[low], xSortedPoints[high]]]
-            minDistanceOf3 = distanceLowHigh
-
-        distanceMidHigh = computeDistance(xSortedPoints[mid], xSortedPoints[high])
-        if math.isclose(distanceMidHigh, minDistanceOf3):
-            closestOf3.append([xSortedPoints[mid], xSortedPoints[high]])
-        elif distanceMidHigh < minDistanceOf3:
-            closestOf3 = [[xSortedPoints[mid], xSortedPoints[high]]]
-            minDistanceOf3 = distanceMidHigh
-       
-        return minDistanceOf3, closestOf3
-
-    splitIndex = math.floor((high + low) / 2)
+    splitIndex = (len(xSortedPoints) - 1) // 2
     x_m = xSortedPoints[splitIndex][0]
-    leftMinDistance, leftSortedPoints = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, low, splitIndex)
-    rightMinDistance, rightSortedPoints = enhanced_dnc_recursive(xSortedPoints, ySortedPoints, splitIndex + 1, high)
-    if leftMinDistance < rightMinDistance:
+    leftXSortedPoints = xSortedPoints[:splitIndex]
+    rightXSortedPoints = xSortedPoints[splitIndex + 1:]
+    leftYSortedPoints = [point for point in ySortedPoints if point[0] <= xSortedPoints[splitIndex][0]]
+    rightYSortedPoints = [point for point in ySortedPoints if point[0] > xSortedPoints[splitIndex][0]]
+
+    leftMinDistance, leftClosestPoints = enhanced_dnc_recursive(leftXSortedPoints, leftYSortedPoints)
+    rightMinDistance, rightClosestPoints = enhanced_dnc_recursive(rightXSortedPoints, rightYSortedPoints)
+
+    if math.isclose(leftMinDistance, rightMinDistance):
         d = leftMinDistance
-        closestPoints = leftSortedPoints
+        closestPoints = leftClosestPoints + rightClosestPoints
+    elif leftMinDistance < rightMinDistance:
+        d = leftMinDistance
+        closestPoints = leftClosestPoints
     elif leftMinDistance > rightMinDistance:
         d = rightMinDistance
-        closestPoints = rightSortedPoints
-    elif leftMinDistance == rightMinDistance:
-        d = leftMinDistance
-        closestPoints = leftSortedPoints
-        for point in rightSortedPoints:
-            closestPoints.append(point)
+        closestPoints = rightClosestPoints
 
+    # Remove previously counted pairs contained in M strip to avoid double count
+    closestPointsCopy = copy.deepcopy(closestPoints)
     for pointSet in closestPoints:
-        if pointSet[0][0] == x_m and pointSet[1][0] == x_m:
-            closestPoints.remove(pointSet)
-        elif abs(pointSet[0][0] - x_m) <= d and abs(pointSet[1][0] - x_m) <= d:
-            closestPoints.remove(pointSet)
-    M = []
-    for point in ySortedPoints:
-        if point[0] < xSortedPoints[low][0] or point[0] > xSortedPoints[high][0]:
-            continue
-        delta = abs(point[0] - x_m)
-        if abs(point[0] - x_m) < d:
-            M.append(point)
+        if math.isclose(pointSet[0][0], x_m) and math.isclose(pointSet[1][0],x_m):
+            closestPointsCopy.remove(pointSet)
+        elif (abs(pointSet[0][0] - x_m) < d and abs(pointSet[1][0] - x_m) < d):
+            closestPointsCopy.remove(pointSet)   
+    closestPoints = closestPointsCopy  
+
+    M = [point for point in ySortedPoints if abs(point[0] - x_m) < d]
     d_m = d
     closestPointsInM = []
+
     for i, A in enumerate(M):
+        j = 0
         for B in M[i + 1:]:
             if (abs(B[1] - A[1]) > d):
                 break
             else:
                 current_d = computeDistance(A, B)
+                j += 1
+                if (j > 7):
+                    print("Merge inner loop executed more than 7 times!")
                 if math.isclose(current_d, d_m):
-                    closestPointsInM.append([A,B])
+                    closestPointsInM += [[A,B]]
                 elif current_d < d_m:
                     closestPointsInM = [[A,B]]
                     d_m = current_d
     if math.isclose(d_m, d):
-        for pointSet in closestPointsInM:
-            closestPoints.append(pointSet)
+        closestPoints += closestPointsInM
     elif d_m < d:
         closestPoints = closestPointsInM
         d = d_m
@@ -105,7 +91,8 @@ def computeDistance(A, B):
 
 if __name__ == "__main__":
     try:
-        points = read_input_from_cli()
+        # points = read_input_from_cli()
+        points = read_file_to_list("input2.txt")
 
         # Measure execution time
         start_time = time.time()
