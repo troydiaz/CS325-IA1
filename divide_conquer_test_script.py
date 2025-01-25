@@ -10,7 +10,7 @@ output_divide_and_conquer = np.zeros((6, 11))
 for k in range(1, 6):
     for i in range(1, 11):
         # Read the input points from the file
-        points = read_file_to_list(f"input10^{k}-trial{i}.txt")
+        points = read_file_to_list(f"inputs/input10^{k}-trial{i}.txt")
         print(f"Computing for input10^{k}-trial{i}.txt")
 
         # Test divide-and-conquer implementation

@@ -58,13 +58,12 @@ def divide_and_conquer_closest_pair(points: list[tuple[float, float]]) -> tuple[
         strip = [p for p in sorted_points if abs(p[0] - midpoint_x) < d]
 
         # Remove closest pairs within M-strip to avoid double-count
-        pairsCopy = copy.deepcopy(pairs)
+        toRemove = []
         for pair in pairs:
-            if math.isclose(pair[0][0], midpoint_x) and math.isclose(pair[1][0],midpoint_x):
-                pairsCopy.remove(pair)
-            elif (abs(pair[0][0] - midpoint_x) < d and abs(pair[1][0] - midpoint_x) < d):
-                pairsCopy.remove(pair)   
-        pairs = pairsCopy  
+            if (abs(pair[0][0] - midpoint_x) < d and abs(pair[1][0] - midpoint_x) < d):
+                toRemove += [pair]  
+        for pair in toRemove:
+            pairs.remove(pair)
         
         # Sort the strips by y-coordinates from scratch (Naive Approach)
         strip.sort(key=lambda p: p[1])

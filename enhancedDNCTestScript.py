@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 output = np.zeros((8, 11))
-for k in range(1, 8):
+for k in range(1, 6):
     for i in range(1, 11):
         points = read_file_to_list(f"inputs/input10^{k}-trial{i}.txt")
         print(f"Computing for input10^{k}-trial{i}.txt")
