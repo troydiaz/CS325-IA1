@@ -22,26 +22,27 @@ def enhanced_divide_and_conquer_closest_pair(points: list[tuple[float, float]]) 
               tuple of two points ((x1, y1), (x2, y2)).
     """
     
-    points.sort(key=lambda point: point[0])
-    xSorted = points
-    ySorted = sorted(points, key=lambda point: point[1])
-    distance, pairs = enhanced_dnc_recursive(xSorted, ySorted)
+    points.sort(key=lambda point: point[1])
+    ySorted = points
+    distance, pairs = enhanced_dnc_recursive(ySorted)
     return distance, sort_pairs(pairs)
 
-def enhanced_dnc_recursive(xSortedPoints, ySortedPoints):
-    xSortedLength = len(xSortedPoints)
-    if xSortedLength <= 1:
+def enhanced_dnc_recursive(points):
+    numberOfPoints = len(points)
+    if numberOfPoints <= 1:
         return float('inf'), []
 
-    splitIndex = (xSortedLength - 1) // 2
-    x_m = xSortedPoints[splitIndex][0]
-    leftXSortedPoints = xSortedPoints[:splitIndex]
-    rightXSortedPoints = xSortedPoints[splitIndex + 1:]
-    leftYSortedPoints = [point for point in ySortedPoints if point[0] <= x_m]
-    rightYSortedPoints = [point for point in ySortedPoints if point[0] > x_m]
+    x_median = getMedianX(points)
+    leftPoints  = [point for point in points if point[0] <= x_median]
+    rightPoints = [point for point in points if point[0] > x_median]
 
-    leftMinDistance, leftClosestPoints = enhanced_dnc_recursive(leftXSortedPoints, leftYSortedPoints)
-    rightMinDistance, rightClosestPoints = enhanced_dnc_recursive(rightXSortedPoints, rightYSortedPoints)
+    # Could have all points less than or equal to the median - therefore not possible to divide anymore. To avoid infinite recursion:
+    if len(leftPoints) == numberOfPoints or len(rightPoints) == numberOfPoints:
+        print(f"Calling brute force on {numberOfPoints}")
+        return brute_force_unsorted(points)
+
+    leftMinDistance, leftClosestPoints = enhanced_dnc_recursive(leftPoints)
+    rightMinDistance, rightClosestPoints = enhanced_dnc_recursive(rightPoints)
 
     if math.isclose(leftMinDistance, rightMinDistance):
         d = leftMinDistance
@@ -56,24 +57,20 @@ def enhanced_dnc_recursive(xSortedPoints, ySortedPoints):
     # Remove previously counted pairs contained in M strip to avoid double count
     toRemove = []
     for pointSet in closestPoints:
-        if (abs(pointSet[0][0] - x_m) < d and abs(pointSet[1][0] - x_m) < d):
+        if (abs(pointSet[0][0] - x_median) < d and abs(pointSet[1][0] - x_median) < d):
             toRemove += [pointSet]
     for pointSet in toRemove:
         closestPoints.remove(pointSet)
 
-    M = [point for point in ySortedPoints if abs(point[0] - x_m) < d]
+    M = [point for point in points if abs(point[0] - x_median) < d]
     d_m = d
     closestPointsInM = []
 
     for i, A in enumerate(M):
-        # j = 0
         for B in M[i + 1:]:
             if (abs(B[1] - A[1]) > d):
                 break
             else:
-                # j += 1
-                # if (j > 7):
-                #     print("Inner merge loop executing more than 7 times!")
                 current_d = computeDistance(A, B)
                 if math.isclose(current_d, d_m):
                     closestPointsInM += [[A,B]]
@@ -90,10 +87,71 @@ def enhanced_dnc_recursive(xSortedPoints, ySortedPoints):
 def computeDistance(A, B):
     return math.sqrt(math.pow((A[0] - B[0]),2) + math.pow((A[1] - B[1]),2))
 
+def getMedianX(A):
+    if len(A) == 1:
+        return A[0][0]
+    elif len(A) == 2:
+        return (A[0][0] + A[1][0]) / 2
+    medianIndex = len(A) // 2
+    return Select(A, medianIndex)
+
+def Select(A, k):
+    if len(A) == 1:
+        return A[0][0]
+    v = len(A) // 2
+    r = partition(A, v)
+
+    if r == k:
+        return A[r][0]
+    elif r > k:
+        return Select(A[:r], k)
+    else:
+        return Select(A[r + 1:], k - r - 1)
+
+def partition(A, pivotIndex):
+    lengthA = len(A)
+    if lengthA <= 1:
+        return 0
+    i = 1
+    j = lengthA - 1
+    if pivotIndex != 0:
+        A[0], A[pivotIndex] = A[pivotIndex], A[0]
+    pivot = A[0][0]
+    while (i <= j):
+        while i <= j and A[i][0] <= pivot :
+            i += 1
+        while i <= j and A[j][0] > pivot:
+            j -= 1
+        if (i < j):
+            A[i], A[j] = A[j], A[i]
+    if j != 0:
+        A[j], A[0] = A[0], A[j]
+    return j
+
+def brute_force_unsorted(points):
+    min_dist = float('inf')
+    closest_pairs = []
+    dist = 0.0
+    for i in range(len(points)):
+        for j in range(i+1, len(points)):
+            p1 = points[i]
+            p2 = points[j]
+
+            dist = computeDistance(points[i], points[j])
+
+            if dist < min_dist:
+                min_dist = dist
+                closest_pairs = [[p1, p2]]
+            elif dist == min_dist:
+                closest_pairs.append([p1, p2])
+
+    return min_dist, closest_pairs
+
 if __name__ == "__main__":
     try:
-        points = read_input_from_cli()
+        # points = read_input_from_cli()
         # points = read_file_to_list("inputs/input10^5-trial1.txt")
+        points = read_file_to_list("input1.txt")
 
         # Measure execution time
         start_time = time.time()
