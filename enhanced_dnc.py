@@ -3,6 +3,7 @@ import copy
 from itertools import combinations
 import math
 import time
+import random
 from a1_utils import read_input_from_cli, distance, write_output_to_file,read_file_to_list, generate_random_input_file, sort_pairs
 from brute_force import brute_force_closest_pair
 
@@ -32,7 +33,8 @@ def enhanced_dnc_recursive(points):
     if numberOfPoints <= 1:
         return float('inf'), []
 
-    x_median = getMedianX(points)
+    xValues = [point[0] for point in points]
+    x_median = getMedian(xValues)
     leftPoints  = [point for point in points if point[0] <= x_median]
     rightPoints = [point for point in points if point[0] > x_median]
 
@@ -87,23 +89,22 @@ def enhanced_dnc_recursive(points):
 def computeDistance(A, B):
     return math.sqrt(math.pow((A[0] - B[0]),2) + math.pow((A[1] - B[1]),2))
 
-def getMedianX(array):
-    if len(array) == 1:
-        return A[0][0]
-    elif len(array) == 2:
-        return (array[0][0] + array[1][0]) / 2
-    medianIndex = len(array) // 2
-    A = copy.deepcopy(array)
+def getMedian(A):
+    if len(A) == 1:
+        return A[0]
+    elif len(A) == 2:
+        return (A[0] + A[1]) / 2
+    medianIndex = len(A) // 2
     return Select(A, medianIndex)
 
 def Select(A, k):
     if len(A) == 1:
-        return A[0][0]
-    v = len(A) // 2
+        return A[0]
+    v = random.randint(0, len(A) - 1)
     r = partition(A, v)
 
     if r == k:
-        return A[r][0]
+        return A[r]
     elif r > k:
         return Select(A[:r], k)
     else:
@@ -117,11 +118,11 @@ def partition(A, pivotIndex):
     j = lengthA - 1
     if pivotIndex != 0:
         A[0], A[pivotIndex] = A[pivotIndex], A[0]
-    pivot = A[0][0]
+    pivot = A[0]
     while (i <= j):
-        while i <= j and A[i][0] <= pivot :
+        while i <= j and A[i] <= pivot :
             i += 1
-        while i <= j and A[j][0] > pivot:
+        while i <= j and A[j] > pivot:
             j -= 1
         if (i < j):
             A[i], A[j] = A[j], A[i]
@@ -150,8 +151,8 @@ def brute_force_unsorted(points):
 
 if __name__ == "__main__":
     try:
-        # points = read_input_from_cli()
-        points = read_file_to_list("inputs/input10^5-trial1.txt")
+        points = read_input_from_cli()
+        # points = read_file_to_list("inputs/input10^5-trial1.txt")
         # points = read_file_to_list("input1.txt")
 
         # Measure execution time
