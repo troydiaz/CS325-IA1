@@ -33,10 +33,7 @@ def enhanced_dnc_recursive(points):
     if numberOfPoints <= 1:
         return float('inf'), []
 
-    xValues = [point[0] for point in points]
-    x_median = getMedian(xValues)
-    leftPoints  = [point for point in points if point[0] <= x_median]
-    rightPoints = [point for point in points if point[0] > x_median]
+    x_median, leftPoints, rightPoints = getMedian(points)
 
     # Could have all points less than or equal to the median - therefore not possible to divide anymore. To avoid infinite recursion:
     if len(leftPoints) == numberOfPoints or len(rightPoints) == numberOfPoints:
@@ -91,44 +88,49 @@ def computeDistance(A, B):
 
 def getMedian(A):
     if len(A) == 1:
-        return A[0]
+        return A[0][0], A, []
     elif len(A) == 2:
-        return (A[0] + A[1]) / 2
+        return (A[0][0] + A[1][0]) / 2, A[0], A[1]
     medianIndex = len(A) // 2
     return Select(A, medianIndex)
 
 def Select(A, k):
     if len(A) == 1:
-        return A[0]
+        return A[0][0], A, []
     v = random.randint(0, len(A) - 1)
-    r = partition(A, v)
+    # v = len(A) // 2
+    r, pivot = partitionStable(A, v)
 
     if r == k:
-        return A[r]
+        return A[pivot][0], A[:r], A[r:]
     elif r > k:
         return Select(A[:r], k)
     else:
         return Select(A[r + 1:], k - r - 1)
 
-def partition(A, pivotIndex):
-    lengthA = len(A)
-    if lengthA <= 1:
-        return 0
-    i = 1
-    j = lengthA - 1
-    if pivotIndex != 0:
-        A[0], A[pivotIndex] = A[pivotIndex], A[0]
-    pivot = A[0]
-    while (i <= j):
-        while i <= j and A[i] <= pivot :
+def partitionStable(A, pivotIndex):
+    i = 0
+    j = len(A) - 1
+    pivot = A[pivotIndex]
+    B = [[] for i in range(len(A))]
+    n = len(A)
+    for k in range(0, n):
+        if k == pivotIndex:
+            pivotPlaceB = j
+        if A[k][0] < pivot[0]:
+            B[i] = A[k]
             i += 1
-        while i <= j and A[j] > pivot:
+        else:
+            B[j] = A[k]
             j -= 1
-        if (i < j):
-            A[i], A[j] = A[j], A[i]
-    if j != 0:
-        A[j], A[0] = A[0], A[j]
-    return j
+    for k in range(0, i):
+        A[k] = B[k]
+    h = 0
+    for k in range(n - 1, i - 1, -1):
+        A[i + h] = B[k]
+        h += 1
+    distanceFromI = n - 1 - pivotPlaceB
+    return i, i + distanceFromI
 
 def brute_force_unsorted(points):
     min_dist = float('inf')
@@ -152,8 +154,8 @@ def brute_force_unsorted(points):
 if __name__ == "__main__":
     try:
         points = read_input_from_cli()
-        # points = read_file_to_list("inputs/input10^5-trial1.txt")
-        # points = read_file_to_list("input1.txt")
+        # points = read_file_to_list("inputs/input10^5-trial2.txt")
+        # points = read_file_to_list("input3.txt")
 
         # Measure execution time
         start_time = time.time()
