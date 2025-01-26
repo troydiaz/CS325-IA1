@@ -23,26 +23,26 @@ def enhanced_divide_and_conquer_closest_pair(points: list[tuple[float, float]]) 
               tuple of two points ((x1, y1), (x2, y2)).
     """
     
-    points.sort(key=lambda point: point[0])
-    xSorted = points
-    ySorted = sorted(points, key=lambda point: point[1])
-    distance, pairs = enhanced_dnc_recursive(xSorted, ySorted)
+    points.sort(key=lambda point: point[1])
+    ySorted = points
+    distance, pairs = enhanced_dnc_recursive(ySorted)
     return distance, sort_pairs(pairs)
 
-def enhanced_dnc_recursive(xSortedPoints, ySortedPoints):
-    numberOfPoints = len(xSortedPoints)
+def enhanced_dnc_recursive(points):
+    numberOfPoints = len(points)
     if numberOfPoints <= 1:
         return float('inf'), []
 
-    splitIndex = (numberOfPoints - 1) // 2
-    x_median = xSortedPoints[splitIndex][0]
-    leftXSortedPoints = xSortedPoints[:splitIndex]
-    rightXSortedPoints = xSortedPoints[splitIndex + 1:]
-    leftYSortedPoints = [point for point in ySortedPoints if point[0] <= x_median]
-    rightYSortedPoints = [point for point in ySortedPoints if point[0] > x_median]
+    x_median, leftPoints, rightPoints = getMedian(points)
 
-    leftMinDistance, leftClosestPoints = enhanced_dnc_recursive(leftXSortedPoints, leftYSortedPoints)
-    rightMinDistance, rightClosestPoints = enhanced_dnc_recursive(rightXSortedPoints, rightYSortedPoints)
+    # Could have all points less than or equal to the median - therefore not possible to divide anymore. To avoid infinite recursion:
+    if len(leftPoints) == numberOfPoints or len(rightPoints) == numberOfPoints:
+        # return brute_force_unsorted(points)
+        rightPoints = points[numberOfPoints // 2:]
+        leftPoints = points[:numberOfPoints // 2]
+
+    leftMinDistance, leftClosestPoints = enhanced_dnc_recursive(leftPoints)
+    rightMinDistance, rightClosestPoints = enhanced_dnc_recursive(rightPoints)
 
     if math.isclose(leftMinDistance, rightMinDistance):
         d = leftMinDistance
@@ -62,7 +62,7 @@ def enhanced_dnc_recursive(xSortedPoints, ySortedPoints):
     for pointSet in toRemove:
         closestPoints.remove(pointSet)
 
-    M = [point for point in ySortedPoints if abs(point[0] - x_median) < d]
+    M = [point for point in points if abs(point[0] - x_median) < d]
     d_m = d
     closestPointsInM = []
 
@@ -87,103 +87,101 @@ def enhanced_dnc_recursive(xSortedPoints, ySortedPoints):
 def computeDistance(A, B):
     return math.sqrt(math.pow((A[0] - B[0]),2) + math.pow((A[1] - B[1]),2))
 
-# We also tried using the median/select algorithms to obtain the X median directly from the Y-sorted array, therefore avoiding the creation of separate X and Y sorted arrays. On some inputs this worked and reduced speed by 50%. On other inputs, it did not work and the time was much longer. It appears to be related the choice of pivot, and different attempts were tried to select good pivots, including a random pivot and the median-of-median method. None of these worked consistently for all inputs.
+def getMedian(A):
+    if len(A) == 1:
+        return A[0][0], A, []
+    elif len(A) == 2:
+        return (A[0][0] + A[1][0]) / 2, A[0], A[1]
+    medianIndex = len(A) // 2
+    return Select(A, medianIndex)
 
-# def getMedian(A):
-#     if len(A) == 1:
-#         return A[0][0], A, []
-#     elif len(A) == 2:
-#         return (A[0][0] + A[1][0]) / 2, A[0], A[1]
-#     medianIndex = len(A) // 2
-#     return Select(A, medianIndex)
+def Select(A, k):
+    if len(A) == 1:
+        return A[0][0], A, []
+    v = random.randint(0, len(A) - 1)
+    v = 0
+    n = len(A)
+    nDiv5 = n // 5
+    if nDiv5 == 0:
+        v = 0
+    else:
+        M = [[] for l in range (0, nDiv5)]
+        for i in range(0, nDiv5):
+            if i == nDiv5:
+                count = n % 5
+            else:
+                count = 5
+            for j in range(0, count):
+                M[i].append(A[i * 5 + j][0])
+        MM = SelectMedian(M, n // 10)
+        for i in range(0, n):
+            if A[i][0] == MM:
+                v = i
+                break
+    r, pivot = partitionStable(A, v)
 
-# def Select(A, k):
-#     if len(A) == 1:
-#         return A[0][0], A, []
-#     v = random.randint(0, len(A) - 1)
-#     v = 0
-#     n = len(A)
-#     nDiv5 = n // 5
-#     if nDiv5 == 0:
-#         v = 0
-#     else:
-#         M = [[] for l in range (0, nDiv5)]
-#         for i in range(0, nDiv5):
-#             if i == nDiv5:
-#                 count = n % 5
-#             else:
-#                 count = 5
-#             for j in range(0, count):
-#                 M[i].append(A[i * 5 + j][0])
-#         MM = SelectMedian(M, n // 10)
-#         for i in range(0, n):
-#             if A[i][0] == MM:
-#                 v = i
-#                 break
-#     r, pivot = partitionStable(A, v)
+    if r == k:
+        return A[pivot][0], A[:r], A[r:]
+    elif r > k:
+        return Select(A[:r], k)
+    else:
+        return Select(A[r + 1:], k - r - 1)
 
-#     if r == k:
-#         return A[pivot][0], A[:r], A[r:]
-#     elif r > k:
-#         return Select(A[:r], k)
-#     else:
-#         return Select(A[r + 1:], k - r - 1)
+def partitionStable(A, pivotIndex):
+    i = 0
+    j = len(A) - 1
+    pivot = A[pivotIndex]
+    B = [[] for i in range(len(A))]
+    n = len(A)
+    for k in range(0, n):
+        if k == pivotIndex:
+            pivotPlaceB = j
+        if A[k][0] < pivot[0]:
+            B[i] = A[k]
+            i += 1
+        else:
+            B[j] = A[k]
+            j -= 1
+    for k in range(0, i):
+        A[k] = B[k]
+    h = 0
+    for k in range(n - 1, i - 1, -1):
+        A[i + h] = B[k]
+        h += 1
+    distanceFromI = n - 1 - pivotPlaceB
+    return i, i + distanceFromI
 
-# def partitionStable(A, pivotIndex):
-#     i = 0
-#     j = len(A) - 1
-#     pivot = A[pivotIndex]
-#     B = [[] for i in range(len(A))]
-#     n = len(A)
-#     for k in range(0, n):
-#         if k == pivotIndex:
-#             pivotPlaceB = j
-#         if A[k][0] < pivot[0]:
-#             B[i] = A[k]
-#             i += 1
-#         else:
-#             B[j] = A[k]
-#             j -= 1
-#     for k in range(0, i):
-#         A[k] = B[k]
-#     h = 0
-#     for k in range(n - 1, i - 1, -1):
-#         A[i + h] = B[k]
-#         h += 1
-#     distanceFromI = n - 1 - pivotPlaceB
-#     return i, i + distanceFromI
+def SelectMedian(A, k):
+    if len(A) == 1:
+        return 0
+    v = random.randint(0, len(A) - 1)
+    r = partition(A, v)
+    if r == k:
+        return A[r]
+    elif r > k:
+        return SelectMedian(A[:r], k)
+    else:
+        return SelectMedian(A[r + 1:], k - r - 1)    
 
-# def SelectMedian(A, k):
-#     if len(A) == 1:
-#         return 0
-#     v = random.randint(0, len(A) - 1)
-#     r = partition(A, v)
-#     if r == k:
-#         return A[r]
-#     elif r > k:
-#         return SelectMedian(A[:r], k)
-#     else:
-#         return SelectMedian(A[r + 1:], k - r - 1)    
-
-# def partition(A, pivotIndex):
-#     lengthA = len(A)
-#     if lengthA <= 1:
-#         return 0
-#     i = 1
-#     j = lengthA - 1
-#     if pivotIndex != 0:
-#         A[0], A[pivotIndex] = A[pivotIndex], A[0]
-#     pivot = A[0]
-#     while (i <= j):
-#         while i <= j and A[i] <= pivot :
-#             i += 1
-#         while i <= j and A[j] > pivot:
-#             j -= 1
-#         if (i < j):
-#             A[i], A[j] = A[j], A[i]
-#     if j != 0:
-#         A[j], A[0] = A[0], A[j]
-#     return j
+def partition(A, pivotIndex):
+    lengthA = len(A)
+    if lengthA <= 1:
+        return 0
+    i = 1
+    j = lengthA - 1
+    if pivotIndex != 0:
+        A[0], A[pivotIndex] = A[pivotIndex], A[0]
+    pivot = A[0]
+    while (i <= j):
+        while i <= j and A[i] <= pivot :
+            i += 1
+        while i <= j and A[j] > pivot:
+            j -= 1
+        if (i < j):
+            A[i], A[j] = A[j], A[i]
+    if j != 0:
+        A[j], A[0] = A[0], A[j]
+    return j
 
 def brute_force_unsorted(points):
     min_dist = float('inf')
