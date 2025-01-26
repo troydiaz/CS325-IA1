@@ -87,12 +87,13 @@ def enhanced_dnc_recursive(points):
 def computeDistance(A, B):
     return math.sqrt(math.pow((A[0] - B[0]),2) + math.pow((A[1] - B[1]),2))
 
-def getMedianX(A):
-    if len(A) == 1:
+def getMedianX(array):
+    if len(array) == 1:
         return A[0][0]
-    elif len(A) == 2:
-        return (A[0][0] + A[1][0]) / 2
-    medianIndex = len(A) // 2
+    elif len(array) == 2:
+        return (array[0][0] + array[1][0]) / 2
+    medianIndex = len(array) // 2
+    A = copy.deepcopy(array)
     return Select(A, medianIndex)
 
 def Select(A, k):
@@ -150,8 +151,8 @@ def brute_force_unsorted(points):
 if __name__ == "__main__":
     try:
         # points = read_input_from_cli()
-        # points = read_file_to_list("inputs/input10^5-trial1.txt")
-        points = read_file_to_list("input1.txt")
+        points = read_file_to_list("inputs/input10^5-trial1.txt")
+        # points = read_file_to_list("input1.txt")
 
         # Measure execution time
         start_time = time.time()
