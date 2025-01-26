@@ -37,7 +37,6 @@ def enhanced_dnc_recursive(points):
 
     # Could have all points less than or equal to the median - therefore not possible to divide anymore. To avoid infinite recursion:
     if len(leftPoints) == numberOfPoints or len(rightPoints) == numberOfPoints:
-        print(f"Calling brute force on {numberOfPoints}")
         return brute_force_unsorted(points)
 
     leftMinDistance, leftClosestPoints = enhanced_dnc_recursive(leftPoints)
@@ -98,7 +97,25 @@ def Select(A, k):
     if len(A) == 1:
         return A[0][0], A, []
     v = random.randint(0, len(A) - 1)
-    # v = len(A) // 2
+    v = 0
+    n = len(A)
+    nDiv5 = n // 5
+    if nDiv5 == 0:
+        v = 0
+    else:
+        M = [[] for l in range (0, nDiv5)]
+        for i in range(0, nDiv5):
+            if i == nDiv5:
+                count = n % 5
+            else:
+                count = 5
+            for j in range(0, count):
+                M[i].append(A[i * 5 + j][0])
+        MM = SelectMedian(M, n // 10)
+        for i in range(0, n):
+            if A[i][0] == MM:
+                v = i
+                break
     r, pivot = partitionStable(A, v)
 
     if r == k:
@@ -132,6 +149,38 @@ def partitionStable(A, pivotIndex):
     distanceFromI = n - 1 - pivotPlaceB
     return i, i + distanceFromI
 
+def SelectMedian(A, k):
+    if len(A) == 1:
+        return 0
+    v = random.randint(0, len(A) - 1)
+    r = partition(A, v)
+    if r == k:
+        return A[r]
+    elif r > k:
+        return SelectMedian(A[:r], k)
+    else:
+        return SelectMedian(A[r + 1:], k - r - 1)    
+
+def partition(A, pivotIndex):
+    lengthA = len(A)
+    if lengthA <= 1:
+        return 0
+    i = 1
+    j = lengthA - 1
+    if pivotIndex != 0:
+        A[0], A[pivotIndex] = A[pivotIndex], A[0]
+    pivot = A[0]
+    while (i <= j):
+        while i <= j and A[i] <= pivot :
+            i += 1
+        while i <= j and A[j] > pivot:
+            j -= 1
+        if (i < j):
+            A[i], A[j] = A[j], A[i]
+    if j != 0:
+        A[j], A[0] = A[0], A[j]
+    return j
+
 def brute_force_unsorted(points):
     min_dist = float('inf')
     closest_pairs = []
@@ -154,7 +203,7 @@ def brute_force_unsorted(points):
 if __name__ == "__main__":
     try:
         points = read_input_from_cli()
-        # points = read_file_to_list("inputs/input10^5-trial2.txt")
+        # points = read_file_to_list("inputs/input10^5-trial1.txt")
         # points = read_file_to_list("input3.txt")
 
         # Measure execution time
